@@ -2,6 +2,7 @@ import {Component, ElementRef, ViewChild} from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
 import {AngularFireDatabase, AngularFireList} from '@angular/fire/database';
 import { Observable } from 'rxjs';
+import swal from 'sweetalert2';
 
 @Component({
   selector: 'app-root',
@@ -45,16 +46,43 @@ export class AppComponent {
     const itemID = this.inputItemID.nativeElement.valueAsNumber;
     const itemPrice = this.inputItemPrice.nativeElement.valueAsNumber;
     if (this.containsItem(itemName)) {
-      alert(itemName + 'already existed. The new value has been updated!');
+      // alert(itemName + 'already existed. The new value has been updated!');
+      swal({
+        type: 'warning',
+        title: 'Update?',
+        text: itemName + 'already existed! Do you want to update new value?',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, update!',
+        cancelButtonText: 'cancel'
+      }).then((result) => {
+        if (result.dismiss === swal.DismissReason.cancel) {
+          swal({
+            type: 'info',
+            title: 'Cancelled',
+            text: 'Your data is safe :)'
+          });
+        } else if (result) {
+          this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice});
+          swal({
+            type: 'success',
+            title: 'Success!',
+            text: itemName + ' has been updated!'
+          });
+        }
+      });
     }
-    this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice});
   }
   deleteItem() {
     const itemName = this.inputDeleteItemName.nativeElement.value;
     if (this.containsItem(itemName)) {
       this.firebaseList.remove(itemName);
     } else {
-      alert(itemName + ' does not exist!');
+      // alert(itemName + ' does not exist!');
+      swal({
+        title: 'Error!',
+        text: itemName + ' does not exist!',
+        type: 'error'
+      });
     }
   }
   sort() {
