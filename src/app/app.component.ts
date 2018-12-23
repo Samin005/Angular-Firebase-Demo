@@ -70,6 +70,8 @@ export class AppComponent {
           });
         }
       });
+    } else {
+      this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice});
     }
   }
   deleteItem() {
