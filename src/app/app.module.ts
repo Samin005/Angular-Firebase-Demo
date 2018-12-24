@@ -7,6 +7,7 @@ import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AppComponent } from './app.component';
 import {environment} from '../environments/environment';
+import { AngularFontAwesomeModule } from 'angular-font-awesome';
 
 @NgModule({
   declarations: [
@@ -14,6 +15,7 @@ import {environment} from '../environments/environment';
   ],
   imports: [
     BrowserModule,
+    AngularFontAwesomeModule,
     AngularFireModule.initializeApp(environment.firebase), // imports firebase/app needed for everything
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule, // imports firebase/auth, only needed for auth features,

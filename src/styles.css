@@ -2,3 +2,19 @@
 .swal2-popup {
   font-size: 1.6rem !important;
 }
+.right-inner-addon {
+  position: relative;
+}
+.right-inner-addon input {
+  padding-right: 30px;
+  width: 100%;
+}
+.right-inner-addon i {
+  position: absolute;
+  right: 0px;
+  padding: 10px 12px;
+  pointer-events: none;
+}
+.right-inner-addon i:hover {
+  cursor: pointer;
+}

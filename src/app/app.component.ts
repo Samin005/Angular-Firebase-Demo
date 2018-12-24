@@ -1,8 +1,9 @@
 import {Component, ElementRef, ViewChild} from '@angular/core';
 import { AngularFirestore } from '@angular/fire/firestore';
-import {AngularFireDatabase, AngularFireList} from '@angular/fire/database';
+import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { Observable } from 'rxjs';
 import swal from 'sweetalert2';
+import * as firebase from 'firebase/app';
 
 @Component({
   selector: 'app-root',
@@ -15,10 +16,12 @@ export class AppComponent {
   @ViewChild('inputItemID') inputItemID: ElementRef;
   @ViewChild('inputItemPrice') inputItemPrice: ElementRef;
   @ViewChild('inputDeleteItemName') inputDeleteItemName: ElementRef;
+  @ViewChild('inputSearchByItem') inputSearchByItem: ElementRef;
   itemsCouldDB: Observable<any[]>;
   itemsFirebaseDB: Observable<any[]>;
   firebaseList: AngularFireList<any>;
   sortBtnText = 'Price';
+  allItemIDs = [];
   allItemNames = [];
   allItemPrices = [];
   totalPrice = 0;
@@ -27,18 +30,7 @@ export class AppComponent {
     this.itemsCouldDB = CloudDB.collection('users').valueChanges();
     this.firebaseList = firebaseDB.list('TestDB/Items');
     this.itemsFirebaseDB = this.firebaseList.valueChanges();
-    this.itemsFirebaseDB.subscribe(items => {
-      this.allItemNames = [];
-      this.allItemPrices = [];
-      this.totalPrice = 0;
-      items.forEach(item => {
-        this.allItemNames.push(item.name);
-        this.allItemPrices.push(item.price);
-      });
-      this.allItemPrices.forEach(price => {
-        this.totalPrice = this.totalPrice + price;
-      });
-    });
+    this.updateAll();
   }
   addItem() {
     // console.log(this.inputItemName.nativeElement.value, this.inputItemID.nativeElement.valueAsNumber, this.inputItemPrice.nativeElement.valueAsNumber);
@@ -50,7 +42,7 @@ export class AppComponent {
       swal({
         type: 'warning',
         title: 'Update?',
-        text: itemName + 'already existed! Do you want to update new value?',
+        text: itemName + ' already existed! Do you want to update new value?',
         showCancelButton: true,
         confirmButtonText: 'Yes, update!',
         cancelButtonText: 'cancel'
@@ -62,22 +54,37 @@ export class AppComponent {
             text: 'Your data is safe :)'
           });
         } else if (result) {
+          // this.firebaseList = this.firebaseDB.list('TestDB/Items');
           this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice});
           swal({
             type: 'success',
             title: 'Success!',
             text: itemName + ' has been updated!'
           });
+          this.itemsFirebaseDB = this.firebaseList.valueChanges();
+          this.updateAllPrice();
+          // this.inputSearchByItem.nativeElement.value = '';
         }
       });
     } else {
+      // this.firebaseList = this.firebaseDB.list('TestDB/Items');
       this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice});
     }
+    // this.updateAllPrice();
+    // this.itemsFirebaseDB = this.firebaseList.valueChanges();
+    this.updateAll();
+    // this.inputSearchByItem.nativeElement.value = '';
   }
   deleteItem() {
     const itemName = this.inputDeleteItemName.nativeElement.value;
+    // this.firebaseList = this.firebaseDB.list('TestDB/Items');
     if (this.containsItem(itemName)) {
       this.firebaseList.remove(itemName);
+      swal({
+        type: 'success',
+        title: 'Success!',
+        text: itemName + ' has been deleted!'
+      });
     } else {
       // alert(itemName + ' does not exist!');
       swal({
@@ -86,21 +93,111 @@ export class AppComponent {
         type: 'error'
       });
     }
+    // this.itemsFirebaseDB = this.firebaseList.valueChanges();
+    this.updateAll();
+    // this.updateAllPrice();
   }
   sort() {
+    this.updateTempList();
     if (this.sortBtnText === 'Price') {
       this.sortBtnText = 'ID';
       // this.itemsFirebaseDB = this.firebaseDB.list('TestDB/Items', ref => ref.orderByChild('price')).valueChanges();
+      // this.firebaseList = this.firebaseDB.list('TestDB/tempItems', ref => ref.orderByChild('price'));
       this.firebaseList = this.firebaseDB.list('TestDB/Items', ref => ref.orderByChild('price'));
       this.itemsFirebaseDB = this.firebaseList.valueChanges();
     } else {
       this.sortBtnText = 'Price';
       // this.itemsFirebaseDB = this.firebaseDB.list('TestDB/Items', ref => ref.orderByChild('ID')).valueChanges();
+      // this.firebaseList = this.firebaseDB.list('TestDB/tempItems', ref => ref.orderByChild('ID'));
       this.firebaseList = this.firebaseDB.list('TestDB/Items', ref => ref.orderByChild('ID'));
       this.itemsFirebaseDB = this.firebaseList.valueChanges();
     }
+    // const temp = firebase.database().ref('TestDB/Items').orderByChild('ID').on('child_added', function (snapshot) {
+    //   const item = snapshot.val();
+    //   if (/item 1/.test(item.name)) {
+    //     console.log(item);
+    //   }
+    // }).name;
+    // console.log(temp);
+    this.updateAll();
+  }
+  searchByNameOnChange() {
+    this.updateTempList();
+  }
+  searchByItemName() {
+    const searchItemName = this.inputSearchByItem.nativeElement.value;
+    this.firebaseList = this.firebaseDB.list('TestDB/Items', ref => ref.orderByChild('name').startAt(searchItemName).endAt(searchItemName + '\uf8ff'));
+    this.itemsFirebaseDB = this.firebaseList.valueChanges();
+    // this.updateAllPrice();
+    this.updateAll();
   }
   containsItem(itemName: string): boolean {
      return this.allItemNames.includes(itemName);
+  }
+  updateTempList() {
+    // const searchItemName = this.inputSearchByItem.nativeElement.value;
+    // this.firebaseList = this.firebaseDB.list('TestDB/Items');
+    // this.firebaseList.snapshotChanges(['child_added'])
+    //   .subscribe(actions => {
+    //     const tempList = this.firebaseDB.list('TestDB');
+    //     tempList.remove('tempItems');
+    //     actions.forEach(action => {
+    //       if (action.key.includes(searchItemName)) {
+    //         // console.log('type: ' + action.type);
+    //         // console.log('key: ' + action.key);
+    //         // console.log(action.payload.val());
+    //         tempList.update('tempItems/' + action.key, action.payload.val());
+    //       }
+    //     });
+    //   });
+  }
+  updateAllPrice() {
+    this.itemsFirebaseDB.subscribe(items => {
+      this.allItemPrices = [];
+      this.totalPrice = 0;
+      items.forEach(item => {
+        this.allItemPrices.push(item.price);
+      });
+      this.allItemPrices.forEach(price => {
+        this.totalPrice = this.totalPrice + price;
+      });
+    });
+  }
+  updateAll() {
+    this.itemsFirebaseDB.subscribe(items => {
+      this.allItemIDs = [];
+      this.allItemNames = [];
+      this.allItemPrices = [];
+      this.totalPrice = 0;
+      items.forEach(item => {
+        this.allItemIDs.push(item.id);
+        this.allItemNames.push(item.name);
+        this.allItemPrices.push(item.price);
+      });
+      this.allItemPrices.forEach(price => {
+        this.totalPrice = this.totalPrice + price;
+      });
+    });
+    console.log(this.allItemIDs);
+    console.log(this.allItemNames);
+    console.log(this.allItemPrices);
+    // this.firebaseList.snapshotChanges(['child_added'])
+    //   .subscribe(actions => {
+    //     this.allItemIDs = [];
+    //     this.allItemNames = [];
+    //     this.allItemPrices = [];
+    //     this.totalPrice = 0;
+    //     actions.forEach(action => {
+    //         // console.log('type: ' + action.type);
+    //         // console.log('key: ' + action.key);
+    //         // console.log(action.payload.val().id);
+    //       this.allItemIDs.push(action.payload.val().id);
+    //       this.allItemNames.push(action.payload.val().name);
+    //       this.allItemPrices.push(action.payload.val().price);
+    //     });
+    //     this.allItemPrices.forEach(price => {
+    //       this.totalPrice = this.totalPrice + price;
+    //     });
+    //   });
   }
 }
