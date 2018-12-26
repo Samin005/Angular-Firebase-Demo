@@ -3,7 +3,7 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import { AngularFireDatabase, AngularFireList } from '@angular/fire/database';
 import { Observable } from 'rxjs';
 import swal from 'sweetalert2';
-import * as firebase from 'firebase/app';
+// import * as firebase from 'firebase/app';
 
 @Component({
   selector: 'app-root',
@@ -49,19 +49,19 @@ export class AppComponent {
         cancelButtonText: 'cancel'
       }).then((result) => {
         if (result.dismiss === swal.DismissReason.cancel) {
-          swal({
+           swal({
             type: 'info',
             title: 'Cancelled',
             text: 'Your data is safe :)'
-          });
+          }).catch(reason => { console.log(reason); });
         } else if (result) {
           // this.firebaseList = this.firebaseDB.list('TestDB/Items');
-          this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice});
+          this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice}).catch(reason => { console.log(reason); });
           swal({
             type: 'success',
             title: 'Success!',
             text: itemName + ' has been updated!'
-          });
+          }).catch(reason => { console.log(reason); });
           this.itemsFirebaseDB = this.firebaseList.valueChanges();
           this.updateAllPrice();
           // this.inputSearchByItem.nativeElement.value = '';
@@ -69,7 +69,7 @@ export class AppComponent {
       });
     } else {
       // this.firebaseList = this.firebaseDB.list('TestDB/Items');
-      this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice});
+      this.firebaseList.set(itemName, {name: itemName, id: itemID, price: itemPrice}).catch(reason => { console.log(reason); });
     }
     // this.updateAllPrice();
     // this.itemsFirebaseDB = this.firebaseList.valueChanges();
@@ -80,19 +80,19 @@ export class AppComponent {
     const itemName = this.inputDeleteItemName.nativeElement.value;
     // this.firebaseList = this.firebaseDB.list('TestDB/Items');
     if (this.containsItem(itemName)) {
-      this.firebaseList.remove(itemName);
+      this.firebaseList.remove(itemName).catch(reason => { console.log(reason); });
       swal({
         type: 'success',
         title: 'Success!',
         text: itemName + ' has been deleted!'
-      });
+      }).catch(reason => { console.log(reason); });
     } else {
       // alert(itemName + ' does not exist!');
       swal({
         title: 'Error!',
         text: itemName + ' does not exist!',
         type: 'error'
-      });
+      }).catch(reason => { console.log(reason); });
     }
     // this.itemsFirebaseDB = this.firebaseList.valueChanges();
     this.updateAll();
@@ -131,11 +131,7 @@ export class AppComponent {
     this.itemsFirebaseDB = this.firebaseList.valueChanges();
     // this.updateAllPrice();
     this.updateAll();
-    if (searchItemName === '') {
-      this.showSortButton = true;
-    } else {
-      this.showSortButton = false;
-    }
+    this.showSortButton = searchItemName === '';
   }
   containsItem(itemName: string): boolean {
      return this.allItemNames.includes(itemName);
@@ -184,9 +180,9 @@ export class AppComponent {
         this.totalPrice = this.totalPrice + price;
       });
     });
-    console.log(this.allItemIDs);
-    console.log(this.allItemNames);
-    console.log(this.allItemPrices);
+    // console.log(this.allItemIDs);
+    // console.log(this.allItemNames);
+    // console.log(this.allItemPrices);
     // this.firebaseList.snapshotChanges(['child_added'])
     //   .subscribe(actions => {
     //     this.allItemIDs = [];
