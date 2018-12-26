@@ -21,6 +21,7 @@ export class AppComponent {
   itemsFirebaseDB: Observable<any[]>;
   firebaseList: AngularFireList<any>;
   sortBtnText = 'Price';
+  showSortButton = true;
   allItemIDs = [];
   allItemNames = [];
   allItemPrices = [];
@@ -130,6 +131,11 @@ export class AppComponent {
     this.itemsFirebaseDB = this.firebaseList.valueChanges();
     // this.updateAllPrice();
     this.updateAll();
+    if (searchItemName === '') {
+      this.showSortButton = true;
+    } else {
+      this.showSortButton = false;
+    }
   }
   containsItem(itemName: string): boolean {
      return this.allItemNames.includes(itemName);

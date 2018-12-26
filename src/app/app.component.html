@@ -22,7 +22,7 @@
     <div class="col-md-2"></div>
     <div class="col-md-8" style="font-size: large;">
 
-      <button class="btn btn-default pull-right" (click)="sort()">Sort by {{ sortBtnText }}</button>
+      <button *ngIf="showSortButton" class="btn btn-default pull-right" (click)="sort()">Sort by {{ sortBtnText }}</button>
       <table class="table table-hover text-center table-responsive">
         <thead>
         <tr>
