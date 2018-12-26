@@ -129,8 +129,8 @@ export class AppComponent {
     const searchItemName = this.inputSearchByItem.nativeElement.value;
     this.firebaseList = this.firebaseDB.list('TestDB/Items', ref => ref.orderByChild('name').startAt(searchItemName).endAt(searchItemName + '\uf8ff'));
     this.itemsFirebaseDB = this.firebaseList.valueChanges();
-    // this.updateAllPrice();
-    this.updateAll();
+    this.updateAllPrice();
+    // this.updateAll();
     this.showSortButton = searchItemName === '';
   }
   containsItem(itemName: string): boolean {
